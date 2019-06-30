@@ -52,13 +52,13 @@ end
 -- This function switches out the primary with a replacement
 -- Both the primary and the replacement need to have a PrimaryPart
 -- The replacement should be stored under under the correct locale in rootAssetStorage
-function LocalizationSwapper:SwapForLocalization(primary, replacement)
+function LocalizationSwapper:SwapForCurrentLocale(primary, replacement)
 	if typeof(primary) ~= "Instance" or not primary:IsA("Model") then
-		error("bad argument #1 to 'SwapForLocalization' (Model expected, got " .. typeof(primary) .. ")", 2)
+		error("bad argument #1 to 'SwapForCurrentLocale' (Model expected, got " .. typeof(primary) .. ")", 2)
 	elseif not primary.PrimaryPart then
-		error("bad argument #1 to 'SwapForLocalization' (Model has no PrimaryPart set)", 2)
+		error("bad argument #1 to 'SwapForCurrentLocale' (Model has no PrimaryPart set)", 2)
 	elseif typeof(replacement) ~= "string" then
-		error("bad argument #2 to 'SwapForLocalization' (string expected, got " .. typeof(replacement) .. ")", 2)
+		error("bad argument #2 to 'SwapForCurrentLocale' (string expected, got " .. typeof(replacement) .. ")", 2)
 	end
 	
 	if not currentLocale then
@@ -80,11 +80,11 @@ function LocalizationSwapper:SwapForLocalization(primary, replacement)
 end
 
 -- This function removes primary if the user is using a locale that matches an element from localeTable
-function LocalizationSwapper:RemoveForLocalization(primary, localeTable)
+function LocalizationSwapper:RemoveForLocales(primary, localeTable)
 	if typeof(primary) ~= "Instance" then
-		error("bad agument #1 to 'RemoveForLocalization' (Instance expected, got " .. typeof(primary) .. ")", 2)
+		error("bad agument #1 to 'RemoveForLocales' (Instance expected, got " .. typeof(primary) .. ")", 2)
 	elseif typeof(localeTable) ~= "table" then
-		error("bad argument #2 to 'RemoveForLocalization' (table expected, got " .. typeof(localeTable) .. ")", 2)
+		error("bad argument #2 to 'RemoveForLocales' (table expected, got " .. typeof(localeTable) .. ")", 2)
 	end
 
 	if not currentLocale then
@@ -102,15 +102,15 @@ end
 
 -- This function places primary as a child to parent at cframe
 -- Placement will only happen if the currentLocale matches and element from localeTable
-function LocalizationSwapper:PlaceForLocalization(localeTable, asset, cframe, parent)
+function LocalizationSwapper:PlaceForLocales(localeTable, asset, cframe, parent)
 	if typeof(localeTable) ~= "table" then
-		error("bad agument #1 to 'PlaceForLocalization' (table expected, got " .. typeof(localeTable) .. ")", 2)
+		error("bad agument #1 to 'PlaceForLocales' (table expected, got " .. typeof(localeTable) .. ")", 2)
 	elseif typeof(asset) ~= "string" then
-		error("bad argument #2 to 'PlaceForLocalization' (string expected, got " .. typeof(asset) .. ")", 2)
+		error("bad argument #2 to 'PlaceForLocales' (string expected, got " .. typeof(asset) .. ")", 2)
 	elseif typeof(cframe) ~= "CFrame" then
-		error("bad argument #3 to 'PlaceForLocalization' (CFrame expected, got " .. typeof(cframe) .. ")", 2)
+		error("bad argument #3 to 'PlaceForLocales' (CFrame expected, got " .. typeof(cframe) .. ")", 2)
 	elseif typeof(parent) ~= "Instance" then
-		error("bad argument #4 to 'PlaceForLocalization' (Instance expected, got " .. typeof(parent) .. ")", 2)
+		error("bad argument #4 to 'PlaceForLocales' (Instance expected, got " .. typeof(parent) .. ")", 2)
 	end
 	
 	if not currentLocale then
