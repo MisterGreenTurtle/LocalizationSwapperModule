@@ -6,13 +6,14 @@ local module = {}
 	These directories must be named after the LocaleId
 --]]
 
-local player = game.Players.LocalPlayer
-local localService = game:GetService("LocalizationService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local LocalizationService = game:GetService("LocalizationService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local currentLanguage = nil
 
 -- Location of all the language directories
-local rootAssetStorage = game.ReplicatedStorage["Localization Assets"]
+local rootAssetStorage = ReplicatedStorage["Localization Assets"]
 -- Default directory that could contain objects without translations
 -- Defaults to this directory if a missing language is selected
 local defaultFallback = rootAssetStorage.default
@@ -20,28 +21,28 @@ local defaultFallback = rootAssetStorage.default
 -- Used to set the module's language
 -- This is so that the language does not need to be checked multiple times
 -- Can be used to manually set the language
-function module:setLanguage(language)
+function module:SetLanguage(language)
 	currentLanguage = language
 end
 
 -- Sets the initial language of the player
-function getLocalization()
+local function getLocalization()
 	-- Get the translator that the player will be using
 	local success, translator = pcall(function()
-		return localService:GetTranslatorForPlayer(player)
+		return LocalizationService:GetTranslatorForPlayer(LocalPlayer)
 	end)
  
 	if success then -- If successful, then set the language
-		module:setLanguage(translator.LocaleId)
+		module:SetLanguage(translator.LocaleId)
 	else -- If there is an error, this module cannot be used
-		module:setLanguage(nil)
+		module:SetLanguage(nil)
 	end
 end
 
 -- This function switches out the primary with a replacement
 -- Both the primary and the replacement need to have a PrimaryPart
 -- The replacement should be stored under under the correct language in rootAssetStorage
-function module:swapForLocalization(primary, replacement)
+function module:SwapForLocalization(primary, replacement)
 	if currentLanguage == nil or primary == nil or replacement == nil then return end
 	
 	-- Validate directory and clone replacement
@@ -49,7 +50,7 @@ function module:swapForLocalization(primary, replacement)
 		local localeDir = rootAssetStorage:FindFirstChild(currentLanguage)
 		if localeDir == nil then localeDir = defaultFallback end -- use default asset if language is missing
 		
-		local replacementAsset = localeDir:findFirstChild(replacement):Clone()
+		local replacementAsset = localeDir:FindFirstChild(replacement):Clone()
 		
 		return replacementAsset
 	end)	
@@ -96,9 +97,9 @@ function module:placeForLocalization(languageTable, primary, cframe, parent)
 		local localeDir = rootAssetStorage:FindFirstChild(currentLanguage)
 		if localeDir == nil then localeDir = defaultFallback end -- use default asset if language is missing
 		
-		local primaryAsset = localeDir:findFirstChild(primary):Clone()
+		local primaryAsset = localeDir:FindFirstChild(primary):Clone()
 		
-		return primaryAsset
+		return 
 	end)
 	
 	if success then -- Place primary
