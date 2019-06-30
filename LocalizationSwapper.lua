@@ -34,16 +34,18 @@ end
 local defaultFallback = rootAssetStorage:FindFirstChild(DEFAULT_FALLBACK)
 if not defaultFallback then
 	warn("Default directory not found, creating empty one and continuing")
-	local folder = Instance.new("Folder")
-	folder.Name = DEFAULT_FALLBACK
-	folder.Parent = rootAssetStorage
-	defaultFallback = folder
+	defaultFallback = Instance.new("Folder")
+	defaultFallback.Name = DEFAULT_FALLBACK
+	defaultFallback.Parent = rootAssetStorage
 end
 
 -- Used to set the module's language
 -- This is so that the language does not need to be checked multiple times
 -- Can be used to manually set the language
 function LocalizationSwapper:SetLanguage(language)
+	if typeof(language) ~= "string" and language ~= nil then
+		error("bad argument #1 to 'SetLanguage' (string or nil expected, got " .. typeof(language) .. ")", 2)	
+	end
 	currentLanguage = language
 end
 
@@ -51,36 +53,47 @@ end
 -- Both the primary and the replacement need to have a PrimaryPart
 -- The replacement should be stored under under the correct language in rootAssetStorage
 function LocalizationSwapper:SwapForLocalization(primary, replacement)
-	if not (currentLanguage and primary and replacement) then
+	if typeof(primary) ~= "Instance" or not primary:IsA("Model") then
+		error("bad argument #1 to 'SwapForLocalization' (Model expected, got " .. typeof(primary) .. ")", 2)
+	elseif not primary.PrimaryPart then
+		error("bad argument #1 to 'SwapForLocalization' (Model has no PrimaryPart set)", 2)
+	elseif typeof(replacement) ~= "string" then
+		error("bad argument #2 to 'SwapForLocalization' (string expected, got " .. typeof(replacement) .. ")", 2)
+	end
+	
+	if not currentLanguage then
 		return
 	end
 	
 	-- Validate directory and clone replacement
-	local success, replacementAsset = pcall(function()
-		local localeDir = rootAssetStorage:FindFirstChild(currentLanguage)
-		if localeDir == nil then
-			localeDir = defaultFallback -- use default asset if language is missing
-		end
-		
-		return localeDir:FindFirstChild(replacement):Clone()
-	end)	
+	local localeDir = rootAssetStorage:FindFirstChild(currentLanguage) or defaultFallback
+	local primaryAsset = localeDir:FindFirstChild(replacement)
 	
-	if success then -- Replace primary with the replacement
-		replacementAsset:SetPrimaryPartCFrame(primary.PrimaryPart.CFrame)
-		replacementAsset.Parent = primary.Parent
+	if primaryAsset then -- Replace primary with the replacement
+		local clone = primaryAsset:Clone()
+		clone:SetPrimaryPartCFrame(primary.PrimaryPart.CFrame)
+		clone.Parent = primary.Parent
 		primary:Destroy()
+	else
+		warn("No asset with name '" .. replacement .. "' exists for language '" .. currentLanguage .. "' to do swapping with")
 	end
 end
 
 -- This function removes primary if the user is using a language that matches an element from languageTable
 function LocalizationSwapper:RemoveForLocalization(primary, languageTable)
-	if not (currentLanguage and primary and languageTable) then
+	if typeof(primary) ~= "Instance" then
+		error("bad agument #1 to 'RemoveForLocalization' (Instance expected, got " .. typeof(primary) .. ")", 2)
+	elseif typeof(languageTable) ~= "table" then
+		error("bad argument #2 to 'RemoveForLocalization' (table expected, got " .. typeof(languageTable) .. ")", 2)
+	end
+
+	if not currentLanguage then
 		return
 	end
 	
 	-- Check if currentLanguage is in languageTable
-	for _,v in pairs(languageTable) do
-		if currentLanguage == v then
+	for _, language in pairs(languageTable) do
+		if currentLanguage == language then
 			primary:Destroy() -- Remove primary
 			break
 		end
@@ -89,15 +102,25 @@ end
 
 -- This function places primary as a child to parent at cframe
 -- Placement will only happen if the currentLanguage matches and element from languageTable
-function LocalizationSwapper:PlaceForLocalization(languageTable, primary, cframe, parent)
-	if not (currentLanguage and languageTable and primary and cframe) then
+function LocalizationSwapper:PlaceForLocalization(languageTable, asset, cframe, parent)
+	if typeof(languageTable) ~= "table" then
+		error("bad agument #1 to 'PlaceForLocalization' (table expected, got " .. typeof(languageTable) .. ")", 2)
+	elseif typeof(asset) ~= "string" then
+		error("bad argument #2 to 'PlaceForLocalization' (string expected, got " .. typeof(asset) .. ")", 2)
+	elseif typeof(cframe) ~= "CFrame" then
+		error("bad argument #3 to 'PlaceForLocalization' (CFrame expected, got " .. typeof(cframe) .. ")", 2)
+	elseif typeof(parent) ~= "Instance" then
+		error("bad argument #4 to 'PlaceForLocalization' (Instance expected, got " .. typeof(parent) .. ")", 2)
+	end
+	
+	if not currentLanguage then
 		return
 	end
 	
 	-- Check if currentLanguage is in languageTable
 	local foundLanguage = false
-	for _, lang in pairs(languageTable) do
-		if currentLanguage == lang then
+	for _, language in pairs(languageTable) do
+		if currentLanguage == language then
 			foundLanguage = true
 			break
 		end
@@ -107,18 +130,15 @@ function LocalizationSwapper:PlaceForLocalization(languageTable, primary, cframe
 	end
 	
 	-- Validate directory and clone replacement
-	local success, primaryAsset = pcall(function()
-		local localeDir = rootAssetStorage:FindFirstChild(currentLanguage)
-		if not localeDir then
-			localeDir = defaultFallback -- use default asset if language is missing
-		end
+	local localeDir = rootAssetStorage:FindFirstChild(currentLanguage) or defaultFallback
+	local primaryAsset = localeDir:FindFirstChild(asset)
 
-		return localeDir:FindFirstChild(primary):Clone()
-	end)
-	
-	if success then -- Place primary
-		primaryAsset:SetPrimaryPartCFrame(cframe)
-		primaryAsset.Parent = parent
+	if primaryAsset then -- Place primary
+		local clone = primaryAsset:Clone()
+		clone:SetPrimaryPartCFrame(cframe)
+		clone.Parent = parent
+	else -- warn/error
+		warn("No asset with name '" .. asset .. "' exists for language '" .. currentLanguage .. "' to place down")
 	end
 end
 
