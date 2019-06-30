@@ -6,17 +6,33 @@ local LocalizationSwapper = {}
 	These directories must be named after the LocaleId
 --]]
 
+local ASSET_FOLDER_NAME = "Localization Assets"
+local SEARCH_RECURSIVELY = true
+local DEFAULT_FALLBACK = "default"
+
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local LocalizationService = game:GetService("LocalizationService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local currentLanguage = nil
-
 -- Location of all the language directories
-local rootAssetStorage = ReplicatedStorage["Localization Assets"]
+local rootAssetStorage = ReplicatedStorage:FindFirstChild(ASSET_FOLDER_NAME, SEARCH_RECURSIVELY)
+if not rootAssetStorage then
+	-- Cannot continue if folder not found
+	error("Could not find descendant '" .. ASSET_FOLDER_NAME .. "' to use for asset swapping!", 2)
+end
+
 -- Default directory that could contain objects without translations
 -- Defaults to this directory if a missing language is selected
-local defaultFallback = rootAssetStorage.default
+local defaultFallback = rootAssetStorage:FindFirstChild(DEFAULT_FALLBACK)
+if not defaultFallback then
+	warn("Default directory not found, creating it and continuing")
+	local folder = Instance.new("Folder")
+	folder.Name = DEFAULT_FALLBACK
+	folder.Parent = rootAssetStorage
+	defaultFallback = folder
+end
+
+local currentLanguage = nil
 
 -- Used to set the module's language
 -- This is so that the language does not need to be checked multiple times
@@ -43,30 +59,32 @@ end
 -- Both the primary and the replacement need to have a PrimaryPart
 -- The replacement should be stored under under the correct language in rootAssetStorage
 function LocalizationSwapper:SwapForLocalization(primary, replacement)
-	if currentLanguage == nil or primary == nil or replacement == nil then return end
+	if not (currentLanguage and primary and replacement) then
+		return
+	end
 	
 	-- Validate directory and clone replacement
 	local success, replacementAsset = pcall(function()
 		local localeDir = rootAssetStorage:FindFirstChild(currentLanguage)
-		if localeDir == nil then localeDir = defaultFallback end -- use default asset if language is missing
+		if localeDir == nil then
+			localeDir = defaultFallback -- use default asset if language is missing
+		end
 		
-		local replacementAsset = localeDir:FindFirstChild(replacement):Clone()
-		
-		return replacementAsset
+		return localeDir:FindFirstChild(replacement):Clone()
 	end)	
 	
 	if success then -- Replace primary with the replacement
 		replacementAsset:SetPrimaryPartCFrame(primary.PrimaryPart.CFrame)
 		replacementAsset.Parent = primary.Parent
 		primary:Destroy()
-	else -- Error with validation
-		return
 	end
 end
 
 -- This function removes primary if the user is using a language that matches an element from languageTable
 function LocalizationSwapper:RemoveForLocalization(primary, languageTable)
-	if currentLanguage == nil or primary == nil or languageTable == nil then return end
+	if not (currentLanguage and primary and languageTable) then
+		return
+	end
 	
 	-- Check if currentLanguage is in languageTable
 	for _,v in pairs(languageTable) do
@@ -80,33 +98,35 @@ end
 -- This function places primary as a child to parent at cframe
 -- Placement will only happen if the currentLanguage matches and element from languageTable
 function LocalizationSwapper:PlaceForLocalization(languageTable, primary, cframe, parent)
-	if currentLanguage == nil or languageTable == nil or primary == nil or cframe == nil then return end
+	if not (currentLanguage and languageTable and primary and cframe) then
+		return
+	end
 	
 	-- Check if currentLanguage is in languageTable
 	local foundLanguage = false
-	for _,v in pairs(languageTable) do
-		if currentLanguage == v then
+	for _, lang in pairs(languageTable) do
+		if currentLanguage == lang then
 			foundLanguage = true
 			break
 		end
 	end
-	if foundLanguage == false then return end -- Placement not needed
+	if not foundLanguage then
+		return -- Placement not needed
+	end
 	
 	-- Validate directory and clone replacement
 	local success, primaryAsset = pcall(function()
 		local localeDir = rootAssetStorage:FindFirstChild(currentLanguage)
-		if localeDir == nil then localeDir = defaultFallback end -- use default asset if language is missing
-		
-		local primaryAsset = localeDir:FindFirstChild(primary):Clone()
-		
-		return 
+		if not localeDir then
+			localeDir = defaultFallback -- use default asset if language is missing
+		end
+
+		return localeDir:FindFirstChild(primary):Clone()
 	end)
 	
 	if success then -- Place primary
 		primaryAsset:SetPrimaryPartCFrame(cframe)
 		primaryAsset.Parent = parent
-	else -- Error with validation
-		return
 	end
 end
 
