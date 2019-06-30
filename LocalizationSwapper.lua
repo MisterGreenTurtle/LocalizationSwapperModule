@@ -6,53 +6,45 @@ local LocalizationSwapper = {}
 	These directories must be named after the LocaleId
 --]]
 
-local ASSET_FOLDER_NAME = "Localization Assets"
+local ASSET_FOLDER = "Localization Assets"
 local SEARCH_RECURSIVELY = true
 local DEFAULT_FALLBACK = "default"
 
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local LocalizationService = game:GetService("LocalizationService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local currentLanguage = nil
+
+-- Check if not running on client (different from IsServer() in some situations)
+if not RunService:IsClient() then
+	error("LocalizationSwapper should not be used on the server", 2)
+end
 
 -- Location of all the language directories
-local rootAssetStorage = ReplicatedStorage:FindFirstChild(ASSET_FOLDER_NAME, SEARCH_RECURSIVELY)
+local rootAssetStorage = ReplicatedStorage:FindFirstChild(ASSET_FOLDER, SEARCH_RECURSIVELY)
 if not rootAssetStorage then
 	-- Cannot continue if folder not found
-	error("Could not find descendant '" .. ASSET_FOLDER_NAME .. "' to use for asset swapping!", 2)
+	error("Could not find descendant '" .. ASSET_FOLDER .. "' to use for asset swapping!", 2)
 end
 
 -- Default directory that could contain objects without translations
 -- Defaults to this directory if a missing language is selected
 local defaultFallback = rootAssetStorage:FindFirstChild(DEFAULT_FALLBACK)
 if not defaultFallback then
-	warn("Default directory not found, creating it and continuing")
+	warn("Default directory not found, creating empty one and continuing")
 	local folder = Instance.new("Folder")
 	folder.Name = DEFAULT_FALLBACK
 	folder.Parent = rootAssetStorage
 	defaultFallback = folder
 end
 
-local currentLanguage = nil
-
 -- Used to set the module's language
 -- This is so that the language does not need to be checked multiple times
 -- Can be used to manually set the language
 function LocalizationSwapper:SetLanguage(language)
 	currentLanguage = language
-end
-
--- Sets the initial language of the player
-local function getLocalization()
-	-- Get the translator that the player will be using
-	local success, translator = pcall(function()
-		return LocalizationService:GetTranslatorForPlayer(LocalPlayer)
-	end)
- 
-	if success then -- If successful, then set the language
-		LocalizationSwapper:SetLanguage(translator.LocaleId)
-	else -- If there is an error, this module cannot be used
-		LocalizationSwapper:SetLanguage(nil)
-	end
 end
 
 -- This function switches out the primary with a replacement
@@ -130,6 +122,19 @@ function LocalizationSwapper:PlaceForLocalization(languageTable, primary, cframe
 	end
 end
 
-getLocalization()
+-- Sets the initial language of the player
+local function initializeLanguage()
+	-- Get the translator that the player will be using
+	local success, translator = pcall(function()
+		return LocalizationService:GetTranslatorForPlayer(LocalPlayer)
+	end)
+ 
+	if success then
+		-- If successful, then set the language
+		LocalizationSwapper:SetLanguage(translator.LocaleId)
+	end
+end
+
+initializeLanguage()
 
 return LocalizationSwapper
