@@ -1,4 +1,4 @@
-local module = {}
+local LocalizationSwapper = {}
 
 --[[
 	This module is designed to help developers switch out assets that need special translation
@@ -21,7 +21,7 @@ local defaultFallback = rootAssetStorage.default
 -- Used to set the module's language
 -- This is so that the language does not need to be checked multiple times
 -- Can be used to manually set the language
-function module:SetLanguage(language)
+function LocalizationSwapper:SetLanguage(language)
 	currentLanguage = language
 end
 
@@ -33,16 +33,16 @@ local function getLocalization()
 	end)
  
 	if success then -- If successful, then set the language
-		module:SetLanguage(translator.LocaleId)
+		LocalizationSwapper:SetLanguage(translator.LocaleId)
 	else -- If there is an error, this module cannot be used
-		module:SetLanguage(nil)
+		LocalizationSwapper:SetLanguage(nil)
 	end
 end
 
 -- This function switches out the primary with a replacement
 -- Both the primary and the replacement need to have a PrimaryPart
 -- The replacement should be stored under under the correct language in rootAssetStorage
-function module:SwapForLocalization(primary, replacement)
+function LocalizationSwapper:SwapForLocalization(primary, replacement)
 	if currentLanguage == nil or primary == nil or replacement == nil then return end
 	
 	-- Validate directory and clone replacement
@@ -65,7 +65,7 @@ function module:SwapForLocalization(primary, replacement)
 end
 
 -- This function removes primary if the user is using a language that matches an element from languageTable
-function module:removeForLocalization(primary, languageTable)
+function LocalizationSwapper:RemoveForLocalization(primary, languageTable)
 	if currentLanguage == nil or primary == nil or languageTable == nil then return end
 	
 	-- Check if currentLanguage is in languageTable
@@ -79,7 +79,7 @@ end
 
 -- This function places primary as a child to parent at cframe
 -- Placement will only happen if the currentLanguage matches and element from languageTable
-function module:placeForLocalization(languageTable, primary, cframe, parent)
+function LocalizationSwapper:PlaceForLocalization(languageTable, primary, cframe, parent)
 	if currentLanguage == nil or languageTable == nil or primary == nil or cframe == nil then return end
 	
 	-- Check if currentLanguage is in languageTable
@@ -112,4 +112,4 @@ end
 
 getLocalization()
 
-return module
+return LocalizationSwapper
