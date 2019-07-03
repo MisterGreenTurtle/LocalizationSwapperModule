@@ -47,46 +47,68 @@ Use `SetLocale()` to change the locale to a custom locale, then run the module's
 
 
 ## Key Functions
+#### Example references:
+Default Asset:
+
+<img src="https://i.imgur.com/pM5iNUE.png" height=250 width=250>
+
+Database:
+
+![alt text](https://i.imgur.com/K7V6Zpp.png)
 
 ### SwapForCurrentLocale(primary, replacement)
 Switches out `primary` with an asset that matches the string `replacement` from the proper locale folder in `rootAssetStorage`. `primary` is destroyed with this function.
 
-Usage:
+#### Usage:
+
+`currentLocale = "de-de"`
 ```lua
-LocaleModule:SwapForCurrentLocale(game.Workspace.Part, "Part")
+LocaleModule:SwapForCurrentLocale(game.Workspace["Default Asset"], "Replacement Asset")
 ```
+#### Results:
+
+<img src="https://i.imgur.com/PVnzZVD.png" height=250 width=250>
 
 ### RemoveForLocales(localeTable, primary)
 Removes `primary` if the player's currently locale matches an element in `localeTable`
 
-Usage:
+#### Usage:
+
+`currentLocale = "en-us"`
 ```lua
-LocaleModule:RemoveForLocales({"en-us"}, game.Workspace.Part)
+LocaleModule:RemoveForLocales({"en-us"}, game.Workspace["Default Asset"])
 ```
+#### Results:
+
+<img src="https://i.imgur.com/uk7suHx.png" height=250 width=250>
 
 ### InsertForLocales(localeTable, asset, cframe, parent)
 If the player's locale matches an element in `localeTable`, it will find an asset matching the string `asset` from the proper locale folder in `rootAssetStorage`. This asset will be cloned, placed at the CFrame `cframe`, and set as a child of `parent`.
 
-Usage:
+#### Usage:
+
+`currentLocale = "de-de"`
 ```lua
-LocaleModule:InsertForLocales({"en-us"}, "Part", CFrame.new(Vector3.new(0,0,0)), game.Workspace)
+LocaleModule:InsertForLocales({"de-de"}, "Placement Asset", CFrame.new(Vector3.new(0, 5, 0)), game.Workspace)
 ```
+#### Results:
+
+<img src="https://i.imgur.com/HGfjbN9.png" height=250 width=250>
 
 ### GetForCurrentLocale(asset)
 This will return an asset named `asset` from the proper locale folder in `rootAssetStorage`, if it exists.
 
-Usage:
+#### Usage:
 ```lua
 LocaleModule:GetForCurrentLocale("Part")
 ```
-
-Returns:
+#### Returns:
 Part
 
 ### SetLocale()
 Sets the current locale that the module will use.
 
-Usage:
+#### Usage:
 ```lua
 LocaleModule:LocalizationSwapper:SetLocale("en-us")
 ```
