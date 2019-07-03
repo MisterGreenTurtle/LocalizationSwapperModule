@@ -1,8 +1,8 @@
 # LocalizationSwapperModule
-A module to help developers swap assets for different languages.
+A module to help developers manage assets for different languages.
 
 ## Purpose
-This module is designed to help developers switch out assets that need special translation. It provides an an easy way to swap, remove, insert, or obtain a version of an asset that contains the proper translation when it cannot be done by the default translator. 
+This module is designed to help developers manage assets that require special translation. It provides an an easy way to swap, remove, insert, or obtain a copy of an asset that contains the proper translation when it cannot be done by the default translator. 
 
 ## Installation and Usage
 1. Download the files `LocalizationSwapper.lua` and `Database.rbxm`
