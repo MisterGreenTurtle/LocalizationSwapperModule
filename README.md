@@ -102,11 +102,12 @@ LocaleModule:InsertForLocales({"de-de"}, "Placement Asset", CFrame.new(Vector3.n
 This will return an asset named `asset` from the proper locale folder in `rootAssetStorage`, if it exists.
 
 #### Usage:
+`currentLocale = "de-de"`
 ```lua
-LocaleModule:GetForCurrentLocale("Part")
+LocaleModule:GetForCurrentLocale("Placement Asset")
 ```
 #### Returns:
-Part
+Placement Asset
 
 ## SetLocale()
 Sets the current locale that the module will use.
