@@ -52,6 +52,11 @@ Default Asset | Replacement Asset | Placement Asset | Database
 ------------ | ------------- | ------------- | ------------- 
 <img src="https://i.imgur.com/pM5iNUE.png" height=200 width=200> | <img src="https://i.imgur.com/PVnzZVD.png" height=200 width=200> | <img src="https://i.imgur.com/KSXHLE7.png" height=200 width=200> | ![alt text](https://i.imgur.com/K7V6Zpp.png)
 
+#### Example setup
+No functions have been called. `Default Asset` is currently in Workspace.
+
+<img src="https://i.imgur.com/pM5iNUE.png" height=250 width=250> 
+
 ## SwapForCurrentLocale(primary, replacement)
 Switches out `primary` with an asset that matches the string `replacement` from the proper locale folder in `rootAssetStorage`. `primary` is destroyed with this function.
 
