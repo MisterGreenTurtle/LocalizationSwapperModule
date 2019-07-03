@@ -40,12 +40,12 @@ Usage:
 LocaleModule:SwapForCurrentLocale(game.Workspace.Part, "Part")
 ```
 
-### RemoveForLocales(primary, localeTable)
+### RemoveForLocales(localeTable, primary)
 Removes `primary` if the player's currently locale matches an element in `localeTable`
 
 Usage:
 ```lua
-LocaleModule:RemoveForLocales(game.Workspace.Part, {"en-us"})
+LocaleModule:RemoveForLocales({"en-us"}, game.Workspace.Part)
 ```
 
 ### InsertForLocales(localeTable, asset, cframe, parent)
