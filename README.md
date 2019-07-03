@@ -29,6 +29,8 @@ The database for this module is strict with it's setup. The database must be set
 
 Locale folders can be added or removed as needed. The folder's names must match the locale name.
 
+For the default locale, replacement assets are not needed in the locale folder, since `primary` will remain unaffected.
+
 ## Asset Requirements
 1. Each asset must have a unique name, but the name must be shared for each locale version of the asset
 2. The asset must be a Model
