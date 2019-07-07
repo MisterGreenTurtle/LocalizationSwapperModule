@@ -1,52 +1,46 @@
 # LocalizationSwapperModule
-A module to help developers manage assets for different languages.
+A module to help Roblox developers manage 3D and 2D assets that need to be localized for different languages.
 
 ## Purpose
-This module is designed to help developers manage assets that require special translation. It provides an easy way to swap, remove, insert, or obtain a copy of an asset that contains the proper translation when it cannot be done by the default translator. 
+This module is designed to help developers manage non-text assets in their games that require special translation, such as 3D text signs or symbols that should be presented differently in other locales. This cannot be done through the built-in LocalizationService / Translator API, since this only handles textual content, and therefore has to be done manually. This module simplifies the process by providing an easy way to insert, remove, and swap between versions of an asset for each locale. 
 
 ## Installation and Usage
 1. Download the files `LocalizationSwapper.lua` and `Database.rbxm`
-2. Right click on StarterPlayerScripts and select `Insert from file...`
-3. Change the file type to `Scripts (*rbxs *.lua *.txt)`
-4. Select `LocalizationSwapper.lua` and click `Open`
-5. Create a LocalScript to run the module functions in
-6. Right click on ReplicatedStorage and select `Insert from file...`
-7. Select `Database.rbxm` and click `Open`
+2. Use the `Insert from file...` context menu action in Studio to insert the `LocalizationSwapper.lua` file as a ModuleScript in some location in your game.
+   - Change the file type to `Scripts (*rbxs *.lua *.txt)` to make it pop up in the file explorer)
+3. Use the `Insert from file...` context menu action to insert Database.rbxm into ReplicatedStorage.
 
-To use this module, add the following to the LocalScript created in step 5.
+To use this module, you just need to require it:
 ```lua
-local LocaleModule = require([PATH TO MODULE]:WaitForChild("LocalizationSwapperModule"))
+local LocalizationSwapper = require([PATH TO MODULE])
 ```
-Then, call the functions as so
+Then simply use its API members like so:
 ```lua
-LocaleModule:SwapForCurrentLocale(primary, "replacement")
+LocalizationSwapper:SwapForCurrentLocale(primary, "NameOfAsset")
 ```
 
-# Custom Locales and Database Setup
-The database for this module is strict with it's setup. The database must be setup as the following:
+# Storing Assets for Localization
+An example of how to store assets is given with the file Database.rbxm that you have inserted into ReplicatedStorage. It should look like this:
 
-![alt text](https://i.imgur.com/Ovbkdsr.png)
+![](https://imgur.com/a/N17meWU)
 
-Locale folders can be added or removed as needed. The folder's names must match the locale name.
+The folder should be called "Localization Assets". You can then add children folders underneath that represent collections of assets for a particular locale. Locale folders can be added or removed as needed. The folders' names must match the locale name. Make sure to use lower-case version of locales with dashes as separators.
 
-For the default locale, replacement assets are not needed in the locale folder, since `primary` will remain unaffected.
+You do not need to provide alterations of assets for the "default" locale necessarily. If none are present, `primary` will simply remain unaffected when swapping. You do however need to set a default version of an asset when using some other API members of the module on this asset.
 
 ## Asset Requirements
-1. Each asset must have a unique name, but the name must be shared for each locale version of the asset
-2. The asset must be a Model
-3. The `PrimaryPart` of the asset must be set to a part that will be used as a CFrame reference. This `PrimaryPart` must be the same as `primary` if it is being used
+1. Each asset must have a unique name, and that unique name must be shared for each locale version of the asset.
+   - So if you have "ShopSign1" in en-us, its version in ch-zh should also be called "ShopSign1".
+2. The asset must be a Model. (TODO)
+3. The `PrimaryPart` of the Model must be set, so that it can be positioned in the right place when swapping.
 
-## Adding new assets to the Database
-In order to make an asset available to the module, it must be placed in the proper folder for the asset's locale. This asset will then be used if the `currentLocale` matches the player's locale.
+## Adding new assets
+To make an asset available to the module, it must be placed in a locale folder under "Localization Assets". This version of the asset will then be used if the current locale matches that locale.
 
-## Adding new Locales
+## Adding new locales
 1. Create a new Folder instance in the database
 2. Set the name of the Folder to the locale name
-3. Add translated assets as desired
-
-## Custom Locale Usage
-Use `SetLocale()` to change the locale to a custom locale, then run the module's functions as needed.
-
+3. Add localized assets as desired
 
 # Key Functions
 #### Example references:
@@ -108,11 +102,3 @@ LocaleModule:GetForCurrentLocale("Placement Asset")
 ```
 #### Returns:
 Placement Asset
-
-## SetLocale()
-Sets the current locale that the module will use.
-
-#### Usage:
-```lua
-LocaleModule:LocalizationSwapper:SetLocale("en-us")
-```
