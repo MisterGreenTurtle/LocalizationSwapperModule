@@ -22,7 +22,7 @@ LocalizationSwapper:SwapForCurrentLocale(primary, "NameOfAsset")
 # Storing Assets for Localization
 An example of how to store assets is given with the file Database.rbxm that you have inserted into ReplicatedStorage. It should look like this:
 
-![](https://imgur.com/a/N17meWU)
+![alt text](https://imgur.com/wdN2KpP.png)
 
 The folder should be called "Localization Assets". You can then add children folders underneath that represent collections of assets for a particular locale. Locale folders can be added or removed as needed. The folders' names must match the locale name. Make sure to use lower-case version of locales with dashes as separators.
 
