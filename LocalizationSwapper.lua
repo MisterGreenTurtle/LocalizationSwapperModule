@@ -117,7 +117,7 @@ function LocalizationSwapper:GetForCurrentLocale(assetName)
 	if asset then
 		return asset:Clone()
 	else
-		error("No default asset set for '" .. assetName .. "' (reached for locale = '" .. currentLocale .. "')", 2)	
+		--error("No default asset set for '" .. assetName .. "' (reached for locale = '" .. currentLocale .. "')", 2)	
 	end
 end
 
