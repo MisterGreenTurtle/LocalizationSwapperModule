@@ -46,7 +46,7 @@ To make an asset available to the module, it must be placed in a locale folder u
 2. Set the name of the Folder to the locale name.
 3. Add localized assets as children to the folder as desired.
 
-# Key Functions
+# API Members
 #### Example references:
 Default Asset | Replacement Asset | Placement Asset | Database
 ------------ | ------------- | ------------- | ------------- 
