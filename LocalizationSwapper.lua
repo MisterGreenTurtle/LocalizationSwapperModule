@@ -1,9 +1,9 @@
 local LocalizationSwapper = {}
 
 --[[
-	This module is designed to help developers switch out assets that need special translation
-	It requires that the developer have a storage setup, rootAssetStorage, which contains the translated assets
-	These directories must be named after the LocaleId
+	This module is designed to help developers switch out assets that need special translation.
+	It requires that the developer have a storage setup in ReplicatedStorage, which contains the translated assets.
+	These directories must be named after the LocaleId.
 --]]
 
 local ASSET_FOLDER = "Localization Assets"
@@ -18,8 +18,7 @@ local LocalPlayer = game:GetService("Players").LocalPlayer
 local currentLocale = DEFAULT_LOCALE
 
 -- Check if not running on client (different from IsServer() in some situations)
-local RunService = game:GetService("RunService")
-if not RunService:IsClient() then
+if not game:GetService("RunService"):IsClient() then
 	error("LocalizationSwapper should not be used on the server", 2)
 end
 
@@ -40,8 +39,7 @@ if not defaultFallback then
 	defaultFallback.Parent = rootAssetStorage
 end
 
--- Used to set the module's locale
--- This is so that the locale does not need to be checked multiple times
+-- Used to set the module's locale for debugging
 -- Can be used to manually set the locale
 function LocalizationSwapper:SetLocale(locale)
 	if typeof(locale) ~= "string" then
@@ -51,85 +49,109 @@ function LocalizationSwapper:SetLocale(locale)
 	currentLocale = locale
 end
 
--- This function switches out the primary with a replacement
--- Both the primary and the replacement need to have a PrimaryPart
--- The replacement should be stored under under the correct locale in rootAssetStorage
-function LocalizationSwapper:SwapForCurrentLocale(primary, replacement)
-	if typeof(primary) ~= "Instance" or not primary:IsA("Model") then
-		error("bad argument #1 to 'SwapForCurrentLocale' (Model expected, got " .. typeof(primary) .. ")", 2)
-	elseif not primary.PrimaryPart then
-		error("bad argument #1 to 'SwapForCurrentLocale' (Model has no PrimaryPart set)", 2)
-	elseif typeof(replacement) ~= "string" then
-		error("bad argument #2 to 'SwapForCurrentLocale' (string expected, got " .. typeof(replacement) .. ")", 2)
+-- This function switches out the object with a replacement, referenced by name
+-- The replacement should be stored under under the correct locale in storage
+function LocalizationSwapper:SwapForCurrentLocale(object, assetName)
+	if typeof(object) ~= "Instance" then
+		error("bad argument #1 to 'SwapForCurrentLocale' (Instance expected, got " .. typeof(object) .. ")", 2)
+	elseif typeof(assetName) ~= "string" then
+		error("bad argument #2 to 'SwapForCurrentLocale' (string expected, got " .. typeof(assetName) .. ")", 2)
 	end
 	
-	-- Validate directory and clone replacement
+	-- Attempt finding asset to swap with
 	local localeDir = rootAssetStorage:FindFirstChild(currentLocale) or defaultFallback
-	local primaryAsset = localeDir:FindFirstChild(replacement)
+	local asset = localeDir:FindFirstChild(assetName)
 	
-	if primaryAsset then
-		-- Replace primary with the replacement
-		local clone = primaryAsset:Clone()
-		clone:SetPrimaryPartCFrame(primary.PrimaryPart.CFrame)
-		clone.Parent = primary.Parent
-		primary:Destroy()
+	if asset then
+		-- Replace object
+		local replacement = asset:Clone()
+
+		-- Find cframe from object if applicable
+		local cframe
+		if object:IsA("Model") and object.PrimaryPart then
+			cframe = object:GetPrimaryPartCFrame()
+		elseif object:IsA("BasePart") then
+			cframe = object.CFrame
+		end
+
+		-- Apply cframe to replacement if applicable
+		if cframe then
+			if replacement:IsA("Model") and replacement.PrimaryPart then
+				replacement:SetPrimaryPartCFrame(cframe)
+			elseif replacement:IsA("BasePart") then
+				replacement.CFrame = cframe
+			end
+		end
+
+		-- Copy over other common properties
+		replacement.Name = object.Name
+		replacement.Parent = object.Parent
+		
+		object:Destroy()
+		return replacement
 	end
+	
+	-- unchanged
+	return object
 end
 
 -- This function creates a copy of an asset by name, for the current locale
 -- If no such asset exists for the locale, it will give back a copy of the default locale of that asset instead
 -- If no default exists either, the function will throw
-function LocalizationSwapper:GetForCurrentLocale(asset)
-	if typeof(asset) ~= "string" then
-		error("bad argument #2 to 'GetForCurrentLocale' (string expected, got " .. typeof(asset) .. ")", 2)
+function LocalizationSwapper:GetForCurrentLocale(assetName)
+	if typeof(assetName) ~= "string" then
+		error("bad argument #1 to 'GetForCurrentLocale' (string expected, got " .. typeof(assetName) .. ")", 2)
 	end
 	
 	-- Validate directory and find asset
 	local localeDir = rootAssetStorage:FindFirstChild(currentLocale)
 	if localeDir then
-		local primaryAsset = localeDir:FindFirstChild(asset)
-		if primaryAsset then
-			return primaryAsset:Clone()	
+		local asset = localeDir:FindFirstChild(assetName)
+		if asset then
+			return asset:Clone()	
 		end
 	end
 	
 	-- Not found for locale, try default
-	local primaryAsset = defaultFallback:FindFirstChild(asset)
-	if primaryAsset then
-		return primaryAsset:Clone()
+	local asset = defaultFallback:FindFirstChild(assetName)
+	if asset then
+		return asset:Clone()
 	else
-		error("No default asset set for '" .. asset .. "' (reached for locale = '" .. currentLocale .. "')", 2)	
+		error("No default asset set for '" .. assetName .. "' (reached for locale = '" .. currentLocale .. "')", 2)	
 	end
 end
 
--- This function removes primary if the user is using a locale that matches an element from localeTable
-function LocalizationSwapper:RemoveForLocales(localeTable, primary)
+-- This function removes object if the user is using a locale that matches an element from localeTable
+function LocalizationSwapper:RemoveForLocales(localeTable, object)
 	if typeof(localeTable) ~= "table" then
 		error("bad argument #1 to 'RemoveForLocales' (table expected, got " .. typeof(localeTable) .. ")", 2)
-	elseif typeof(primary) ~= "Instance" then
-		error("bad argument #2 to 'RemoveForLocales' (Instance expected, got " .. typeof(primary) .. ")", 2)
+	elseif typeof(object) ~= "Instance" then
+		error("bad argument #2 to 'RemoveForLocales' (Instance expected, got " .. typeof(object) .. ")", 2)
 	end
 	
-	-- Check if currentLocale is in localeTable
+	-- Remove object if currentLocale is in provided localeTable
 	for _, locale in pairs(localeTable) do
 		if currentLocale == locale then
-			primary:Destroy() -- Remove primary
-			break
+			object:Destroy()
+			return true
 		end
 	end
+	
+	-- not removed
+	return false
 end
 
--- This function places primary as a child to parent at cframe
--- Placement will only happen if the currentLocale matches and element from localeTable
-function LocalizationSwapper:InsertForLocales(localeTable, asset, cframe, parent)
+-- This function places an asset by reference in an optionally provided cframe/parent
+-- Placement will only happen if the currentLocale matches an element from localeTable
+function LocalizationSwapper:InsertForLocales(localeTable, assetName, parent, cframe)
 	if typeof(localeTable) ~= "table" then
-		error("bad agument #1 to 'InsertForLocales' (table expected, got " .. typeof(localeTable) .. ")", 2)
-	elseif typeof(asset) ~= "string" then
-		error("bad argument #2 to 'InsertForLocales' (string expected, got " .. typeof(asset) .. ")", 2)
-	elseif typeof(cframe) ~= "CFrame" then
-		error("bad argument #3 to 'InsertForLocales' (CFrame expected, got " .. typeof(cframe) .. ")", 2)
-	elseif typeof(parent) ~= "Instance" then
-		error("bad argument #4 to 'InsertForLocales' (Instance expected, got " .. typeof(parent) .. ")", 2)
+		error("bad argument #1 to 'InsertForLocales' (table expected, got " .. typeof(localeTable) .. ")", 2)
+	elseif typeof(assetName) ~= "string" then
+		error("bad argument #2 to 'InsertForLocales' (string expected, got " .. typeof(assetName) .. ")", 2)
+	elseif parent ~= nil and typeof(parent) ~= "Instance" then
+		error("bad argument #3 to 'InsertForLocales' (Instance expected, got " .. typeof(parent) .. ")", 2)
+	elseif cframe ~= nil and typeof(cframe) ~= "CFrame" then
+		error("bad argument #4 to 'InsertForLocales' (CFrame expected, got " .. typeof(cframe) .. ")", 2)
 	end
 	
 	-- Check if currentLocale is in localeTable
@@ -142,38 +164,55 @@ function LocalizationSwapper:InsertForLocales(localeTable, asset, cframe, parent
 	end
 
 	if not found then
-		return -- Placement not needed
+		return -- Placement not needed for this locale
 	end
 	
 	-- Validate directory and clone replacement
 	local localeDir = rootAssetStorage:FindFirstChild(currentLocale) or defaultFallback
-	local primaryAsset = localeDir:FindFirstChild(asset)
+	local asset = localeDir:FindFirstChild(assetName)
 
-	if primaryAsset then
-		-- Place primary
-		local clone = primaryAsset:Clone()
-		clone:SetPrimaryPartCFrame(cframe)
-		clone.Parent = parent
+	if asset then
+		-- Place asset
+		local copy = asset:Clone()
+		
+		-- CFrame is given, attempt applying it
+		if cframe then
+			if copy:IsA("Model") then
+				if copy.PrimaryPart then
+					copy:SetPrimaryPartCFrame(cframe)
+				else
+					warn("[LocalizationSwapper] Cannot apply CFrame to inserted copy of '" .. assetName .. "' because it has no PrimaryPart set")
+				end
+			elseif copy:IsA("BasePart") then
+				copy.CFrame = cframe
+			else
+				warn("[LocalizationSwapper] Cannot apply CFrame to inserted copy of '" .. assetName .. "' because it is not a Model/Instance")
+			end
+		end
+
+		-- Parent it, if provided
+		copy.Parent = parent
+
+		return copy
 	else
 		warn("[LocalizationSwapper] No asset with name '" .. asset .. "' exists for locale '" .. currentLocale .. "' to place down")
 	end
 end
 
--- Sets the initial locale of the player
-local function initializeLocale()
+do -- Set the initial locale of the player
+
 	-- Get the translator that the player will be using
 	local success, translator = pcall(function()
 		return LocalizationService:GetTranslatorForPlayer(LocalPlayer)
 	end)
- 
+
+	-- Sets the initial locale of the player if successful
 	if success then
-		-- If successful, then set the locale
 		LocalizationSwapper:SetLocale(translator.LocaleId)
 	else
 		warn("[LocalizationSwapper] Initializing locale for local player failed!")
 	end
-end
 
-initializeLocale()
+end
 
 return LocalizationSwapper
